@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # ➡️ SEUS APPS AQUI ⬅️
     'catalogo',  # <--- Adicione esta linha!
+    'rest_framework',  # <-- NOVO: Adicionado para usar o Django REST Framework
 ]
 
 MIDDLEWARE = [
