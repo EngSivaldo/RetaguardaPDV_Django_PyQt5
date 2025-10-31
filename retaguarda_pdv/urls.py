@@ -14,9 +14,17 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# retaguarda_pdv/urls.py
+
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include # Certifique-se que 'include' está importado
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # ---------------------------------------------------------
+    # NOVO: Endpoint para o PDV. Todas as rotas de API do catalogo
+    # serão acessíveis sob o prefixo /api/
+    # ---------------------------------------------------------
+    path('api/', include('catalogo.urls')), # <-- NOVO
 ]
