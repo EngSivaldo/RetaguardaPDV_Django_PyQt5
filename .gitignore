@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# Ambientes virtuais
+venv/
+.venv/
+env/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3 # O banco de dados local NÃO deve ir para o Git
+/media
+/static
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
