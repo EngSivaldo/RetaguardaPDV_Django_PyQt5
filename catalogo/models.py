@@ -6,6 +6,8 @@ from django.db import models
 class Categoria(models.Model):
     """Modelo para agrupar produtos (ex: Eletrônicos, Roupas, Alimentos)."""
     nome = models.CharField(max_length=100, unique=True, verbose_name="Nome da Categoria")
+    # NOVO: Adicione o campo 'descricao'
+    descricao = models.TextField(blank=True, null=True, verbose_name="Descrição da Categoria")
     
     class Meta:
         verbose_name = "Categoria"
@@ -166,7 +168,7 @@ class Venda(models.Model):
     ]
 
     # Dados da Transação
-    numero_venda = models.IntegerField(unique=True, verbose_name="Número da Venda")
+    numero_venda = models.IntegerField(unique=True, null=True, blank=True)
     data_venda = models.DateTimeField(auto_now_add=True, verbose_name="Data/Hora da Venda")
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='F', verbose_name="Status")
     

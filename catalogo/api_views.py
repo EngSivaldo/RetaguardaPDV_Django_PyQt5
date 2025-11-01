@@ -1,9 +1,15 @@
 # catalogo/api_views.py
 
 from rest_framework import viewsets
-from rest_framework.permissions import AllowAny # Usaremos esta permissão
-from .models import Produto
-from .serializers import ProdutoVendaSerializer
+from rest_framework.permissions import AllowAny
+from rest_framework.mixins import CreateModelMixin
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.renderers import TemplateHTMLRenderer # NOVO
+from rest_framework.response import Response # NOVO
+
+from .models import Produto, Venda 
+from .serializers import ProdutoVendaSerializer, VendaSerializer 
+
 
 # ----------------------------------------------------
 # 1. ViewSet para Consulta de Produtos (GET)
@@ -11,20 +17,42 @@ from .serializers import ProdutoVendaSerializer
 
 class ProdutoConsultaViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    ViewSet para listar e buscar produtos e suas variações (grade/estoque).
-    É ReadOnly, ou seja, só permite GET (consulta) e não POST, PUT, DELETE.
-    Este endpoint é usado pelo PDV para carregar o catálogo.
+    Endpoint de consulta (somente leitura) para o PDV.
     """
-    queryset = Produto.objects.filter(ativo=True)
-    serializer_class = ProdutoVendaSerializer
-    permission_classes = [AllowAny] # Permite acesso sem autenticação (por enquanto)
-    # Futuramente, trocaremos para uma permissão de API Key.
-
-    # O filtro 'ativo=True' garante que apenas produtos ativos sejam retornados.
+    queryset = Produto.objects.all()
+    serializer_class = ProdutoVendaSerializer # CORRIGIDO: Nome do Serializer
+    permission_classes = [AllowAny]
+    
     
 # ----------------------------------------------------
 # 2. ViewSet para Registro de Vendas (POST)
 # ----------------------------------------------------
 
-# (O ViewSet de Vendas é mais complexo e será implementado na próxima etapa
-# junto com o método .create() no Serializer, para garantir transação e estoque.)
+class VendaCreateViewSet(CreateModelMixin, GenericViewSet):
+    """
+    ViewSet que permite apenas a criação (POST) de uma nova venda.
+    """
+    queryset = Venda.objects.all()
+    serializer_class = VendaSerializer
+    permission_classes = [AllowAny]
+
+
+# ----------------------------------------------------
+# 3. ViewSet para Formulário de Teste (GET) - NOVO
+# ----------------------------------------------------
+
+class VendaTestFormViewSet(GenericViewSet):
+    """
+    View customizada APENAS para exibir um formulário de teste em HTML.
+    O POST é feito diretamente para /api/vendas/
+    """
+    renderer_classes = [TemplateHTMLRenderer]
+    permission_classes = [AllowAny]
+    
+    # Aponta para o template que está em catalogo/templates/catalogo/
+    template_name = 'catalogo/venda_test_form.html' 
+
+    def list(self, request):
+        """No método GET, apenas renderiza o formulário."""
+        # Retorna o contexto vazio
+        return Response({})

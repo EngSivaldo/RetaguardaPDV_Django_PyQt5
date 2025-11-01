@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de API de Vendas (POST)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
+        textarea, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        textarea { height: 250px; font-family: monospace; }
+        button { background-color: #28a745; color: white; padding: 12px 20px; margin-top: 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
+        button:hover { background-color: #218838; }
+        #response-container { margin-top: 30px; padding: 15px; border-radius: 4px; }
+        #response-status { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
+        .status-201 { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-400 { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status-500 { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Teste de Transação: Venda PDV (POST /api/vendas/)</h1>
+        
+        <label for="cliente_cpf_cnpj">CPF/CNPJ do Cliente (Opcional)</label>
+        <input type="text" id="cliente_cpf_cnpj" value="000.000.000-00">
+
+        <label for="valor_total">Valor Total da Venda</label>
+        <input type="text" id="valor_total" value="45.00">
+
+        <label for="desconto_total">Desconto Total (Opcional)</label>
+        <input type="text" id="desconto_total" value="0.00">
+
+        <label for="itens_json">Itens do Carrinho (Array JSON)</label>
+        <textarea id="itens_json">
+[
+    {
+        "produto_variacao_id": 1,
+        "quantidade": 5,
+        "preco_unitario": 9.00,
+        "desconto_item": 0.00
+    }
+]
+        </textarea>
+        
+        <button onclick="enviarVenda()">Enviar Transação POST</button>
+        
+        <div id="response-container">
+            <div id="response-status"></div>
+            <pre id="response-body"></pre>
+        </div>
+    </div>
+
+    <script>
+        function enviarVenda() {
+            // CORREÇÃO FINAL: O POST deve ir para o endpoint /api/vendas/
+            const url = '/api/vendas/'; 
+            const csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+            // 1. Coletar dados do formulário (mantido do passo anterior)
+            const valorTotal = parseFloat(document.getElementById('valor_total').value);
+            const descontoTotal = parseFloat(document.getElementById('desconto_total').value);
+            const clienteCpfCnpj = document.getElementById('cliente_cpf_cnpj').value;
+            const itensJson = document.getElementById('itens_json').value;
+
+            let itensData;
+            try {
+                itensData = JSON.parse(itensJson);
+            } catch (e) {
+                alert("Erro de sintaxe no JSON dos Itens. Verifique as chaves e vírgulas.");
+                return;
+            }
+
+            // 2. Montar o Payload Final
+            const payload = {
+                valor_total: valorTotal,
+                desconto_total: descontoTotal,
+                cliente_cpf_cnpj: clienteCpfCnpj,
+                itens: itensData
+            };
+
+            // 3. Enviar a requisição POST
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken 
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                const status = response.status;
+                const statusElement = document.getElementById('response-status');
+                const container = document.getElementById('response-container');
+                
+                // Limpar classes e adicionar status
+                container.className = '';
+                container.classList.add(`status-${status}`);
+                statusElement.textContent = `Status: ${status} (${response.statusText})`;
+
+                // 4. Exibir a resposta
+                return response.json().then(data => {
+                    document.getElementById('response-body').textContent = JSON.stringify(data, null, 2);
+                }).catch(() => {
+                    document.getElementById('response-body').textContent = 'Resposta sem corpo JSON ou erro de parse.';
+                });
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+                document.getElementById('response-status').textContent = `Erro de Conexão: ${error.message}`;
+                document.getElementById('response-container').classList.add('status-500');
+            });
+        }
+    </script>
+
+    <form style="display:none;">
+        {% csrf_token %}
+    </form>
+</body>
+</html>
